@@ -1,38 +1,53 @@
 
-from agent_memory_guard import MemoryGuard, Policy
+import pytest
 
-guard = MemoryGuard(policy=Policy.strict())
+from agent_memory_guard import MemoryGuard, Policy, Action
 
-detector = next(
-    d for d in guard._detectors
-    if getattr(d, "name", "") == "sensitive_data"
+
+@pytest.mark.parametrize(
+    "secret, expected_marker",
+    [
+        (
+            "sk-" + ("a" * 32),
+            "[REDACTED:openai_key]",
+        ),
+        (
+            "ghp_" + ("A" * 36),
+            "[REDACTED:github_token]",
+        ),
+    ],
 )
+def test_sensitive_credentials_are_detected_and_redacted(
+    secret,
+    expected_marker,
+):
+    guard = MemoryGuard(policy=Policy.strict())
 
-test_values = [
-    "Example API key: sk-abcdefghijklmnopqrstuvwxyz123456",
-    "Example GitHub token: ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890",
-]
-
-for value in test_values:
-    result = detector.inspect(
-        "secret_test",
-        value,
-        operation="write"
+    # Inspect the sensitive-data detector.
+    detector = next(
+        detector
+        for detector in guard._detectors
+        if getattr(detector, "name", "") == "sensitive_data"
     )
 
-    print("\nInput:", value)
-    print("Matched:", result.matched)
-    print("Metadata:", result.metadata)
+    result = detector.inspect(
+        "secret_test",
+        secret,
+        operation="write",
+    )
 
-    if result.matched:
-        try:
-            action = guard.write(
-                key="secret_test",
-                value=value,
-                source="agent"
-            )
-            print("Guard action:", action)
-            print("Guard read:", guard.read("secret_test"))
+    assert result.matched is True
 
-        except Exception as error:
-            print("Guard exception:", type(error).__name__, error)
+    # Verify that the guard redacts the credential.
+    action = guard.write(
+        key="secret_test",
+        value=secret,
+        source="agent",
+    )
+
+    assert action == Action.REDACT
+
+    redacted_value = guard.read("secret_test")
+
+    assert expected_marker in redacted_value
+    assert secret not in redacted_value
