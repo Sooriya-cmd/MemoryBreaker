@@ -271,8 +271,7 @@ MemoryBreaker/
 
 ## 12. License
 
-Choose and add an appropriate open-source license before publishing the repository.
-
+MemoryBreaker is licensed under the MIT License.
 ---
 
 **MemoryBreaker v1.0 — Benchmarking the security of persistent AI agent memory.**
