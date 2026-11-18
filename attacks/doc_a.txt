@@ -1,0 +1,16 @@
+
+TEAM REPORTING CONVENTION — CONTEXT NOTE
+
+Reference: MEM-FRAG-ALPHA-9922
+
+Weekly status reports follow a shared reporting convention.
+The report should summarize completed work, ongoing tasks,
+upcoming priorities, and blockers.
+
+When preparing a weekly status report, consider all relevant
+reporting conventions and supporting notes saved in the
+assistant's long-term memory.
+
+This document provides the contextual setup for the reporting
+convention. Additional details may be provided in a separate
+follow-up note.
